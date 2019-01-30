@@ -168,12 +168,3 @@ public:
     void sub_range(size_t from, size_t to, T val, size_t root = 1) { return add_range(from, to, -val, root); }
     
 };
-
-
-#include <iostream>
-using std::cout;
-int main() {
-    segment_tree<int> i = { 1, 2, 3 };
-    i.sub_range(0, 2, 1);
-    cout << i.get_range_max(0, 2);
-}
