@@ -13,7 +13,7 @@ using std::make_shared;
 // set: set_value, add_value, sub_value, and_value, or_value, not_value; ;
 // build: segment_tree, operator=, build
 template <typename T>
-class segment_tree_1 {
+class segment_value_tree {
     
 private:
     template <typename U>
@@ -132,7 +132,7 @@ public:
 // set: set_value, add_value, sub_value, and_value, or_value, not_value; add_range, sub_range;
 // build: segment_tree, operator=, build;
 template <typename T>
-class segment_tree_2 {
+class segment_sum_tree {
     
 private:
     template <typename U>
