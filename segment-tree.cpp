@@ -2,12 +2,17 @@
 #include <initializer_list>
 #include <algorithm>
 #include <memory>
+#include <stdexcept>
+#include <string>
 using std::vector;
 using std::initializer_list;
 using std::min;
 using std::max;
 using std::shared_ptr;
 using std::make_shared;
+using std::out_of_range;
+using std::string;
+using std::to_string;
 
 // get: get_value; get_range_sum, get_range_min, get_range_max;
 // set: set_value, add_value, sub_value, and_value, or_value, not_value; add_range, sub_range;
@@ -24,6 +29,7 @@ private:
     };
     
     shared_ptr<vector<node<T>>> tree = make_shared<vector<node<T>>>();
+    size_t _size = 0;
     
     void assign(size_t pos, T val) {
         (*tree)[pos].sum = val;
@@ -53,6 +59,16 @@ private:
         }
     }
     
+    void assert_pos(size_t pos) {
+        if (pos < 0 || pos >= _size)
+            throw out_of_range(string("out of range: position ") + to_string(pos));
+    }
+    
+    void assert_range(size_t from, size_t to) {
+        if (from > to || from < 0 || to < 0 || from >= _size || to >= _size)
+            throw out_of_range(string("out of range: from ") + to_string(from) + string(" to ") + to_string(to));
+    }
+    
 public:
     segment_tree() {}
     segment_tree(segment_tree<T> &init) {
@@ -73,7 +89,7 @@ public:
     
     void build(segment_tree<T> &init) { tree = make_shared<vector<T>>(init.tree); }
     void build(vector<T> &init, size_t from, size_t to, size_t root) {
-        tree->resize(init.size() * 4);
+        assert_range(from, to);
         (*tree)[root].from = from;
         (*tree)[root].to = to;
         if (from == to) assign(root, init[from]);
@@ -84,7 +100,11 @@ public:
             push_up(root);
         }
     }
-    void build(vector<T> &init) { build(init, 0, init.size() - 1, 1); }
+    void build(vector<T> &init) {
+        _size = init.size();
+        tree->resize(init.size() * 4);
+        build(init, 0, init.size() - 1, 1);
+    }
     void build(size_t size, T val) { build(*make_shared<vector<T>>(size, val)); }
     void build(size_t size) { build(size, 0); }
     
@@ -92,6 +112,7 @@ public:
     void operator=(vector<T> &init) { build(init); }
     
     T get_value(size_t pos, size_t root = 1) {
+        assert_pos(pos);
         if ((*tree)[root].from == (*tree)[root].to) return (*tree)[root].sum;
         push_down(root);
         size_t mid = ((*tree)[root].from + (*tree)[root].to) >> 1;
@@ -100,6 +121,7 @@ public:
     }
     
     T set_value(size_t pos, T (&transform)(T original), size_t root = 1) {
+        assert_pos(pos);
         T val = transform((*tree)[root].sum);
         if ((*tree)[root].from == (*tree)[root].to) {
             assign(root, val);
@@ -123,6 +145,7 @@ public:
     T not_value(size_t pos) { return set_value(pos, [](T original) { return ~original; }); }
     
     T get_range_sum(size_t from, size_t to, size_t root = 1) {
+        assert_range(from, to);
         if (from == (*tree)[root].from && to == (*tree)[root].to) return (*tree)[root].sum;
         push_down(root);
         size_t mid = ((*tree)[root].from + (*tree)[root].to) >> 1;
@@ -132,6 +155,7 @@ public:
     }
     
     T get_range_max(size_t from, size_t to, size_t root = 1) {
+        assert_range(from, to);
         if (from == (*tree)[root].from && to == (*tree)[root].to) return (*tree)[root].max;
         push_down(root);
         size_t mid = ((*tree)[root].from + (*tree)[root].to) >> 1;
@@ -141,6 +165,7 @@ public:
     }
     
     T get_range_min(size_t from, size_t to, size_t root = 1) {
+        assert_range(from, to);
         if (from == (*tree)[root].from && to == (*tree)[root].to) return (*tree)[root].min;
         push_down(root);
         size_t mid = ((*tree)[root].from + (*tree)[root].to) >> 1;
@@ -150,6 +175,7 @@ public:
     }
     
     void add_range(size_t from, size_t to, T val, size_t root = 1) {
+        assert_range(from, to);
         if (from == (*tree)[root].from && to == (*tree)[root].to) {
             assign_lazy(root, val);
             assign_with_lazy(root, val);
