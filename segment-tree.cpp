@@ -25,7 +25,7 @@ private:
     struct node {
         size_t from, to;
         U sum, max, min;
-        U add_lazy;
+        U add_lazy = static_cast<U>(0), mul_lazy = static_cast<U>(1);
     };
     
     shared_ptr<vector<node<T>>> tree = make_shared<vector<node<T>>>();
@@ -36,13 +36,19 @@ private:
         (*tree)[pos].max = val;
         (*tree)[pos].min = val;
     }
-    void assign_lazy(size_t pos, T val) {
-        (*tree)[pos].add_lazy += val;
+    void assign_lazy(size_t pos, node<T> &val) {
+        (*tree)[pos].add_lazy += val.add_lazy;
+        (*tree)[pos].mul_lazy *= val.mul_lazy;
+        (*tree)[pos].sum += ((*tree)[pos << 1].to - (*tree)[pos << 1].from + 1) * val.add_lazy;
+        (*tree)[pos].sum *= val.mul_lazy;
+        (*tree)[pos].max += val.add_lazy;
+        (*tree)[pos].max *= val.mul_lazy;
+        (*tree)[pos].min += val.add_lazy;
+        (*tree)[pos].min *= val.mul_lazy;
     }
-    void assign_with_lazy(size_t pos, T val) {
-        (*tree)[pos].sum += ((*tree)[pos << 1].to - (*tree)[pos << 1].from + 1) * val;
-        (*tree)[pos].max += val;
-        (*tree)[pos].min += val;
+    void clear_lazy(size_t pos) {
+        (*tree)[pos].add_lazy = 0;
+        (*tree)[pos].mul_lazy = 1;
     }
     void push_up(size_t pos) {
         (*tree)[pos].sum = (*tree)[pos << 1].sum + (*tree)[pos << 1 | 1].sum;
@@ -50,12 +56,10 @@ private:
         (*tree)[pos].min = min((*tree)[pos << 1].min, (*tree)[pos << 1 | 1].min);
     }
     void push_down(size_t pos) {
-        if ((*tree)[pos].add_lazy) {
-            assign_lazy(pos << 1, (*tree)[pos].add_lazy);
-            assign_with_lazy(pos << 1, (*tree)[pos].add_lazy);
-            assign_lazy(pos << 1 | 1, (*tree)[pos].add_lazy);
-            assign_with_lazy(pos << 1 | 1, (*tree)[pos].add_lazy);
-            assign_lazy(pos, 0);
+        if ((*tree)[pos].add_lazy || (*tree)[pos].mul_lazy) {
+            assign_lazy(pos << 1, (*tree)[pos]);
+            assign_lazy(pos << 1 | 1, (*tree)[pos]);
+            clear_lazy(pos);
         }
     }
     
@@ -174,11 +178,12 @@ public:
         else return min(get_range_min(from, mid, root << 1), get_range_min(mid + 1, to, root << 1 | 1));
     }
     
-    void add_range(size_t from, size_t to, T val, size_t root = 1) {
+    void add_range(size_t from, size_t to, T val = 1, size_t root = 1) {
         assert_range(from, to);
         if (from == (*tree)[root].from && to == (*tree)[root].to) {
-            assign_lazy(root, val);
-            assign_with_lazy(root, val);
+            node<T> tmp = (*tree)[root];
+            tmp.add_lazy += val;
+            assign_lazy(root, tmp);
             return;
         }
         push_down(root);
@@ -191,6 +196,26 @@ public:
         }
         push_up(root);
     }
-    void sub_range(size_t from, size_t to, T val, size_t root = 1) { return add_range(from, to, -val, root); }
+    void sub_range(size_t from, size_t to, T val = 1, size_t root = 1) { return add_range(from, to, -val, root); }
+    
+    void mul_range(size_t from, size_t to, T val, size_t root = 1) {
+        assert_range(from, to);
+        if (from == (*tree)[root].from && to == (*tree)[root].to) {
+            node<T> tmp = (*tree)[root];
+            tmp.mul_lazy *= val;
+            assign_lazy(root, tmp);
+            return;
+        }
+        push_down(root);
+        size_t mid = ((*tree)[root].from + (*tree)[root].to) / 2;
+        if (to <= mid) mul_range(from, to, val, root << 1);
+        else if (from > mid) mul_range(from, to, val, root << 1 | 1);
+        else {
+            mul_range(from, mid, val, root << 1);
+            mul_range(mid + 1, to, val, root << 1 | 1);
+        }
+        push_up(root);
+    }
+    void div_range(size_t from, size_t to, T val = 1, size_t root = 1) { return mul_range(from, to, static_cast<T>(1.0) / val, root); }
     
 };
