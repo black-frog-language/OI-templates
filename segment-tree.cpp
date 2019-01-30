@@ -20,7 +20,7 @@ private:
     struct node {
         size_t from, to;
         U sum, max, min;
-        U add_lazy, max_lazy, min_lazy;
+        U add_lazy;
     };
     
     shared_ptr<vector<node<T>>> tree = make_shared<vector<node<T>>>();
@@ -32,8 +32,6 @@ private:
     }
     void assign_lazy(size_t pos, T val) {
         (*tree)[pos].add_lazy += val;
-        (*tree)[pos].max_lazy += val;
-        (*tree)[pos].min_lazy += val;
     }
     void assign_with_lazy(size_t pos, T val) {
         (*tree)[pos].sum += ((*tree)[pos << 1].to - (*tree)[pos << 1].from + 1) * val;
@@ -170,3 +168,12 @@ public:
     void sub_range(size_t from, size_t to, T val, size_t root = 1) { return add_range(from, to, -val, root); }
     
 };
+
+
+#include <iostream>
+using std::cout;
+int main() {
+    segment_tree<int> i = { 1, 2, 3 };
+    i.sub_range(0, 2, 1);
+    cout << i.get_range_max(0, 2);
+}
