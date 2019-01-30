@@ -37,24 +37,24 @@ private:
     }
     
 public:
-    segment_tree() {}
-    segment_tree(segment_tree<T> &init) {
+    segment_value_tree() {}
+    segment_value_tree(segment_value_tree<T> &init) {
         build(init);
     }
-    segment_tree(vector<T> &init) {
+    segment_value_tree(vector<T> &init) {
         build(init);
     }
-    segment_tree(size_t size) {
+    segment_value_tree(size_t size) {
         build(size);
     }
-    segment_tree(size_t size, T val) {
+    segment_value_tree(size_t size, T val) {
         build(size, val);
     }
-    segment_tree(initializer_list<T> &init) {
+    segment_value_tree(initializer_list<T> &init) {
         build(*make_shared<vector<T>>(init));
     }
     
-    void build(segment_tree<T> &init) { tree = make_shared<vector<T>>(init.tree); }
+    void build(segment_value_tree<T> &init) { tree = make_shared<vector<T>>(init.tree); }
     void build(vector<T> &init, size_t from, size_t to, size_t root) {
         tree->resize(init.size() * 4);
         (*tree)[root].from = from;
@@ -71,7 +71,7 @@ public:
     void build(size_t size, T val) { build(*make_shared<vector<T>>(size, val)); }
     void build(size_t size) { build(size, 0); }
     
-    void operator=(segment_tree<T> &init) { build(init); }
+    void operator=(segment_value_tree<T> &init) { build(init); }
     void operator=(vector<T> &init) { build(init); }
     
     T get_value(size_t pos, size_t root) const {
@@ -128,9 +128,22 @@ public:
     
 };
 
+
+
+#include <vector>
+#include <initializer_list>
+#include <algorithm>
+#include <memory>
+using std::vector;
+using std::initializer_list;
+using std::min;
+using std::max;
+using std::shared_ptr;
+using std::make_shared;
+
 // get: get_value; get_range_sum;
 // set: set_value, add_value, sub_value, and_value, or_value, not_value; add_range, sub_range;
-// build: segment_tree, operator=, build;
+// build: segment_sum_tree, operator=, build;
 template <typename T>
 class segment_sum_tree {
     
@@ -161,24 +174,24 @@ private:
     }
     
 public:
-    segment_tree() {}
-    segment_tree(segment_tree<T> &init) {
+    segment_sum_tree() {}
+    segment_sum_tree(segment_sum_tree<T> &init) {
         build(init);
     }
-    segment_tree(vector<T> &init) {
+    segment_sum_tree(vector<T> &init) {
         build(init);
     }
-    segment_tree(size_t size) {
+    segment_sum_tree(size_t size) {
         build(size);
     }
-    segment_tree(size_t size, T val) {
+    segment_sum_tree(size_t size, T val) {
         build(size, val);
     }
-    segment_tree(initializer_list<T> &init) {
+    segment_sum_tree(initializer_list<T> &init) {
         build(*make_shared<vector<T>>(init));
     }
     
-    void build(segment_tree<T> &init) { tree = make_shared<vector<T>>(init.tree); }
+    void build(segment_sum_tree<T> &init) { tree = make_shared<vector<T>>(init.tree); }
     void build(vector<T> &init, size_t from, size_t to, size_t root) {
         tree->resize(init.size() * 4);
         (*tree)[root].from = from;
@@ -195,7 +208,7 @@ public:
     void build(size_t size, T val) { build(*make_shared<vector<T>>(size, val)); }
     void build(size_t size) { build(size, 0); }
     
-    void operator=(segment_tree<T> &init) { build(init); }
+    void operator=(segment_sum_tree<T> &init) { build(init); }
     void operator=(vector<T> &init) { build(init); }
     
     T get_value(size_t pos, size_t root = 1) {
@@ -255,3 +268,4 @@ public:
     }
     void sub_range(size_t from, size_t to, T val, size_t root = 1) { return add_range(from, to, -val, root); }
 };
+
