@@ -24,7 +24,8 @@ private:
     template <typename U>
     struct node {
         size_t from, to;
-        U sum, max, min;
+        U sum;
+        U cmp;
         U add_lazy = static_cast<U>(0), mul_lazy = static_cast<U>(1);
     };
     
@@ -57,9 +58,8 @@ private:
         (*tree)[pos].mul_lazy = 1;
     }
     void push_up(size_t pos) {
-        (*tree)[pos].sum = ((*tree)[pos << 1].sum + (*tree)[pos << 1 | 1].sum);
-        (*tree)[pos].max = max((*tree)[pos << 1].max, (*tree)[pos << 1 | 1].max);
-        (*tree)[pos].min = min((*tree)[pos << 1].min, (*tree)[pos << 1 | 1].min);
+        (*tree)[pos].sum = cmp(((*tree)[pos << 1].sum, (*tree)[pos << 1 | 1].sum));
+        
     }
     void push_down(size_t pos) {
         if ((*tree)[pos].add_lazy || (*tree)[pos].mul_lazy) {
@@ -98,10 +98,11 @@ public:
     }
     
     void build(segment_tree<T> &init) { tree = make_shared<vector<T>>(init.tree); }
-    void build(vector<T> &init, size_t from, size_t to, size_t root) {
+    void build(vector<T> &init, size_t from, size_t to, size_t root,U cmp) {
         assert_range(from, to);
         (*tree)[root].from = from;
         (*tree)[root].to = to;
+        (*tree)[root].cmp = cmp;
         if (from == to) assign(root, init[from]);
         else {
             size_t mid = (from + to) >> 1;
